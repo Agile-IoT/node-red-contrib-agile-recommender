@@ -1,0 +1,16 @@
+{
+  "name": "node-red-contrib-agile-recommenderandconfigurator",
+  "version": "1.0.0",
+  "description": "This is a package for Node Red nodes meant for the AGILE recommender and the configurator.",
+  "main": "recommender.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "node-red"     : {
+       "nodes": {
+           "recommender": "./recommender.js"
+       }
+   }
+}

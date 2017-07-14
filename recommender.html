@@ -1,0 +1,77 @@
+<script type="text/javascript">
+   //Declaration of variables
+   var intervalFunction;
+   var contentData = $('<div/>', {'id': 'recommender-tab'});
+   $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Please wait until recommender output is updated"+'</div>');
+
+   //Allow logging using the console.log=1 command on the browser
+   var log = function() {
+   if(localStorage.debug)
+   console.log.apply(console.log, arguments);
+   }
+
+   //Function to update the content of the recommender sidebar tab
+    var updateData = function(){
+       log("Updating data");
+       $.ajax({
+       type: "GET",
+       dataType: 'json',
+       url: "http://localhost:8090/recommenderdockerservice/getAppRecommendation",
+       crossDomain : true
+       })
+       .done(function( data ) {
+          var dataString = "";
+
+          for (var i = 0; i<data.appList.length; i++)
+            {
+               dataString = dataString+'<p><b> title: '+data.appList[i].title+'</b></p><p>href: '+data.appList[i].href+'</p><p> stars: '+data.appList[i].stars+'</p><p> downloads:' +data.appList[i].downloads+'</p>'
+            }
+          $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+dataString+'</div>');
+       })
+       .fail( function(xhr, textStatus, errorThrown) {
+          $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Failed to retrieve information from the recommender"+'</div>');
+      })
+      }
+
+   RED.nodes.registerType('recommender',{
+        category: "agile",
+        paletteLabel: "Recommender",
+        label: "Recommender",
+        color: "#C7E9C0",
+        icon: "inject.png",
+        onpaletteadd: function(){
+            RED.sidebar.addTab({
+                    id: "recommender",
+                    label: "recommender",
+                    name: "recommender",
+                    content: contentData,
+                    closeable: true,
+                    disableOnEdit: true,
+                    onchange: function() {
+                       log("Content changed");
+                        }
+                });
+
+             },
+         onpaletteremove:function(){
+            RED.sidebar.removeTab('recommender');
+            clearInterval(intervalFunction);
+         }
+          });
+
+   intervalFunction = setInterval(function(){updateData()},30000);
+</script>
+
+<script type="text/x-red" data-template-name="recommender">
+    <div class="form-row">
+        <label for="recommender-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="recommender-name" placeholder="Name">
+    </div>
+    <div class="form-tips"><b>Tip:</b> This is here to help.</div>
+</script>
+
+
+<script type="text/x-red" data-help-name="recommender">
+   <p>Add and update recommender sidetab</p>
+   <p>This node is included in the palette for the sole purpose of adding the sidebar tab for the AGILE recommender and configurator engine. This node updates the contents of the sidebar tab every 5 minutes</p>
+   </script>
