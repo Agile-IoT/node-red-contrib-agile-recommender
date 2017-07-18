@@ -1,6 +1,7 @@
 <script type="text/javascript">
    //Declaration of variables
    var intervalFunction;
+   var apiEndpoint;
    var contentData = $('<div/>', {'id': 'recommender-tab'});
    $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Please wait until recommender output is updated"+'</div>');
 
@@ -10,13 +11,22 @@
    console.log.apply(console.log, arguments);
    }
 
+   //Set the API endpoint for the recommender based on the Environment variable/hostname/localhost
+   // if(env.AGILE_HOST){
+   //        var apiEndpoint = "http://"+env.AGILE_HOST+":8090";
+   //      } else if(hostname){
+   //        var apiEndpoint = "http://"+hostname+".local:8090";
+   //      }
+   //      else apiEndpoint="http://localhost:8090";
+   //
+   // log("The endpoint URL"+apiEndpoint);
    //Function to update the content of the recommender sidebar tab
     var updateData = function(){
        log("Updating data");
        $.ajax({
        type: "GET",
        dataType: 'json',
-       url: "http://localhost:8090/recommenderdockerservice/getAppRecommendation",
+       url: "http://agile.local:8090/recommenderdockerservice/getAppRecommendation",
        crossDomain : true
        })
        .done(function( data ) {
