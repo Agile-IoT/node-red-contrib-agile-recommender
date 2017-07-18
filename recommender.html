@@ -11,22 +11,19 @@
    console.log.apply(console.log, arguments);
    }
 
-   //Set the API endpoint for the recommender based on the Environment variable/hostname/localhost
-   // if(env.AGILE_HOST){
-   //        var apiEndpoint = "http://"+env.AGILE_HOST+":8090";
-   //      } else if(hostname){
-   //        var apiEndpoint = "http://"+hostname+".local:8090";
-   //      }
-   //      else apiEndpoint="http://localhost:8090";
-   //
-   // log("The endpoint URL"+apiEndpoint);
-   //Function to update the content of the recommender sidebar tab
+   var http = document.location.protocol || "http:";
+   var host = document.location.hostname;
+   var path = "/recommenderdockerservice/getAppRecommendation";
+   apiEndpoint = http + "//" + host + ':8090' + path;
+   log(apiEndpoint)
+
+
     var updateData = function(){
        log("Updating data");
        $.ajax({
        type: "GET",
        dataType: 'json',
-       url: "http://agilegw.local:8090/recommenderdockerservice/getAppRecommendation",
+       url: apiEndpoint,
        crossDomain : true
        })
        .done(function( data ) {
