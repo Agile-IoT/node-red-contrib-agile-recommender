@@ -1,25 +1,32 @@
 <script type="text/javascript">
    //Declaration of variables
-   var intervalFunction;
-   var apiEndpoint;
-   var contentData = $('<div/>', {'id': 'recommender-tab'});
-   $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Please wait until recommender output is updated"+'</div>');
 
-   //Allow logging using the console.log=1 command on the browser
    var log = function() {
    if(localStorage.debug)
    console.log.apply(console.log, arguments);
    }
+
+   var intervalFunction;
+   var apiEndpoint;
+   var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation']
+   var contentData = new Array()
+
+   tabs.forEach(function(tab){
+      temp = $('<div/>', {'id': tab});
+      contentData.push(temp)
+   })
 
    var http = document.location.protocol || "http:";
    var host = document.location.hostname;
    apiEndpoint = http + "//" + host + ':8090';
    log(apiEndpoint)
 
-    var tabname='#recommender-tab';
+
     var updateData = function(type){
+       var tabname='#'+type;
+       log(tabname)
        var path = "/recommenderdockerservice/"+type;
-       log("Updating data");
+       log("Updating data with "+type);
        $.ajax({
        type: "GET",
        dataType: 'json',
@@ -36,7 +43,8 @@
           $(tabname).html('<div class="enebular-admin-wrapper">'+dataString+'</div>');
        })
        .fail( function(xhr, textStatus, errorThrown) {
-          $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Failed to retrieve information from the recommender"+'</div>');
+          log("Called with "+tabname)
+          $(tabname).html('<div class="enebular-admin-wrapper">'+"Failed to retrieve information from the recommender type: "+type+'</div>');
       })
       }
 
@@ -47,26 +55,33 @@
         color: "#C7E9C0",
         icon: "inject.png",
         onpaletteadd: function(){
-            RED.sidebar.addTab({
-                    id: "recommender",
-                    label: "recommender",
-                    name: "recommender",
-                    content: contentData,
+           tabs.forEach(function(tab){
+             RED.sidebar.addTab({
+                    id: tab,
+                    label: tab,
+                    name: tab,
+                    content: contentData[tabs.indexOf(tab)],
                     closeable: true,
                     disableOnEdit: true,
                     onchange: function() {
                        log("Content changed");
                         }
                 });
+                $('#'+tab).html('<div class="enebular-admin-wrapper">'+"Please wait until recommender output is updated"+'</div>');
+          })
 
-             },
+
+           },
          onpaletteremove:function(){
             RED.sidebar.removeTab('recommender');
             clearInterval(intervalFunction);
          }
           });
 
-   intervalFunction = setInterval(function(){updateData('getWorkflowRecommendation')},30000);
+         intervalFunction1 = setInterval(function(){updateData(tabs[0])},5000);
+         intervalFunction2 = setInterval(function(){updateData(tabs[1])},5000);
+
+
 </script>
 
 <script type="text/x-red" data-template-name="recommender">
