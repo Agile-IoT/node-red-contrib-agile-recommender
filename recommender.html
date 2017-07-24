@@ -13,17 +13,16 @@
 
    var http = document.location.protocol || "http:";
    var host = document.location.hostname;
-   var path = "/recommenderdockerservice/getAppRecommendation";
-   apiEndpoint = http + "//" + host + ':8090' + path;
+   apiEndpoint = http + "//" + host + ':8090';
    log(apiEndpoint)
 
-
-    var updateData = function(){
+    var updateData = function(type){
+       var path = "/recommenderdockerservice/"+type;
        log("Updating data");
        $.ajax({
        type: "GET",
        dataType: 'json',
-       url: apiEndpoint,
+       url: apiEndpoint+path,
        crossDomain : true
        })
        .done(function( data ) {
@@ -66,7 +65,7 @@
          }
           });
 
-   intervalFunction = setInterval(function(){updateData()},30000);
+   intervalFunction = setInterval(function(){updateData('getWorkflowRecommendation')},30000);
 </script>
 
 <script type="text/x-red" data-template-name="recommender">
