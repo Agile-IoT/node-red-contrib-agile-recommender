@@ -16,6 +16,7 @@
    apiEndpoint = http + "//" + host + ':8090';
    log(apiEndpoint)
 
+    var tabname='#recommender-tab';
     var updateData = function(type){
        var path = "/recommenderdockerservice/"+type;
        log("Updating data");
@@ -32,7 +33,7 @@
             {
                dataString = dataString+'<p><b> title: '+data.appList[i].title+'</b></p><p>href: '+data.appList[i].href+'</p><p> stars: '+data.appList[i].stars+'</p><p> downloads:' +data.appList[i].downloads+'</p>'
             }
-          $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+dataString+'</div>');
+          $(tabname).html('<div class="enebular-admin-wrapper">'+dataString+'</div>');
        })
        .fail( function(xhr, textStatus, errorThrown) {
           $('#recommender-tab').html('<div class="enebular-admin-wrapper">'+"Failed to retrieve information from the recommender"+'</div>');
