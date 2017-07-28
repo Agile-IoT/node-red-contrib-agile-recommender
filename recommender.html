@@ -1,51 +1,61 @@
 <script type="text/javascript">
    //Declaration of variables
-
-   var log = function() {
-   if(localStorage.debug)
-   console.log.apply(console.log, arguments);
-   }
-
    var intervalFunction;
    var apiEndpoint;
    var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation']
    var contentData = new Array()
 
-   tabs.forEach(function(tab){
-      temp = $('<div/>', {'id': tab});
-      contentData.push(temp)
-   })
+   //Log variable for logging on the browser window
+   var log = function() {
+   if(localStorage.debug)
+   console.log.apply(console.log, arguments);
+   }
 
+   //Create div elements for the tabs and store in contentData
+  tabs.forEach(function(tab){
+     temp = $('<div/>', {'id': tab});
+     contentData.push(temp)
+  })
+
+   //Setup endpoint link
    var http = document.location.protocol || "http:";
    var host = document.location.hostname;
    apiEndpoint = http + "//" + host + ':8090'+'/recommenderdockerservice/';
    log(apiEndpoint)
 
+   //Function to update the tabs, takes the types of recommender for each tab as input and sets the content of the tab
+  var updateData = function(types){
+    types.forEach(function(type){
+       var tabname = '#'+type;
 
-    var updateData = function(types){
-      types.forEach(function(type){
-         var tabname = '#'+type;
-         $.ajax({
-         type: "GET",
-         dataType: 'json',
-         url: apiEndpoint+type,
-         crossDomain : true
-         })
-         .done(function( data ) {
-            var dataString = "";
-            for (var i = 0; i<data.appList.length; i++)
+       $.ajax({
+       type: "GET",
+       dataType: 'json',
+       url: apiEndpoint+type,
+       crossDomain : true
+       })
+       .done(function(data) {
+          var dataString = "";
+            for (var typeKey in data)
               {
-                 dataString = dataString+'<p><b> title: '+data.appList[i].title+'</b></p><p>href: '+data.appList[i].href+'</p><p> stars: '+data.appList[i].stars+'</p><p> downloads:' +data.appList[i].downloads+'</p>'
+                data[typeKey].forEach(function (properties){
+                  for(propertyKey in properties)
+                  {
+                    dataString = dataString+'<p><b> '+propertyKey+': </b>'+properties[propertyKey]+'</p>'
+                  }
+                  dataString = dataString + '<hr style="border: 1px dashed black;" />'
+                })
               }
-            $(tabname).html('<div class="enebular-admin-wrapper">'+dataString+'</div>');
-         })
-         .fail( function(xhr, textStatus, errorThrown) {
-            log("Called with "+tabname)
-            $(tabname).html('<div class="enebular-admin-wrapper">'+"Failed to retrieve information from the recommender type: "+type+'</div>');
-        })
-      });
-      }
+            $(tabname).html('<div class="recommender-tab-content">'+dataString+'</div>');
+       })
+       .fail( function(xhr, textStatus, errorThrown) {
+          log("Called with "+tabname)
+          $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+type+'</div>');
+      })
+    });
+    }
 
+  //Register the recommender node
    RED.nodes.registerType('recommender',{
         category: "agile",
         paletteLabel: "Recommender",
@@ -65,7 +75,7 @@
                        log("Content changed");
                         }
                 });
-                $('#'+tab).html('<div class="enebular-admin-wrapper">'+"Please wait until recommender output is updated"+'</div>');
+                $('#'+tab).html('<div class="recommender-tab-content">'+"Please wait until recommender output is updated"+'</div>');
           })
 
 
@@ -76,6 +86,7 @@
          }
           });
 
+         //update the data in this interval
          intervalFunction = setInterval(function(){updateData(tabs)},5000);
 
 
