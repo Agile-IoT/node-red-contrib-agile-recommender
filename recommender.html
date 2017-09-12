@@ -6,7 +6,7 @@
    //tabs for the recommender
    var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation'];
    //keys to be displayed
-   var keys = ['title','description','link','href']
+   var keys = ['title','description','link','href', 'installCommand']
    var contentData = new Array();
    var clipboardData = "";
 
@@ -34,9 +34,11 @@
 
 
   //Trial function to copy to clipboard
-  function copyToClipboard() {
+  function copyToClipboard(id) {
     var textArea = document.createElement("textarea");
-    textArea.value = clipboardData;
+    textArea.value = "error"
+    document.getElementById(id).value;
+    log("ID issue")
     document.body.appendChild(textArea);
     textArea.select();
     try {
@@ -60,6 +62,7 @@
    //The data returned is an array of entities ,for example, an array of cloud providers.
    //Each entity has certain properties, which are key value pairs, like title, description.
   var updateData = function(recommenderTypes){
+    var buttonId = 0;
     recommenderTypes.forEach(function(recommenderType){
        var tabname = '#'+recommenderType;
        $.ajax({
@@ -81,7 +84,7 @@
                     dataString = dataString + '<img src="'+window[recommenderType.replace("get","").replace("Recommendation","")+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
                   for(key in properties)
                   {
-                    if(keys.includes(key))
+                    if(keys.includes(key)&&properties[key]!=null)
                       {
                         if(key=='link'||key=='href')
                           dataString = dataString + '<p><b> '+key+': </b>'+' <a href="'+properties[key]+'" target="_blank">'+properties[key]+'</a>';
