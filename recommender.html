@@ -2,8 +2,19 @@
    //Declaration of variables
    var intervalFunction;
    var apiEndpoint;
-   var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation']
-   var contentData = new Array()
+   var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation'];
+   var keys = ['title','description','href']
+   var contentData = new Array();
+
+   //Icon settings for the recommender tabs
+   var iconRatio = 15;
+   var iconHeight = window.innerHeight/iconRatio;
+   var iconWidth = window.innerWidth/iconRatio;
+
+   //Icon URLs
+   var CloudUrl = 'https://s26.postimg.org/w8qdsru11/cloud.png';
+   var nodeUrl = 'https://s26.postimg.org/lkmmtxk1x/node.png';
+   var flowUrl = 'https://s26.postimg.org/r7izremkl/workflow.png';
 
    //Log variable for logging on the browser window
    var log = function() {
@@ -11,23 +22,23 @@
    console.log.apply(console.log, arguments);
    }
 
+   log(window.getHeight+' then '+window.getWidth+ 'then '+iconHeight+'then '+iconWidth)
+
    //Create div elements for the tabs and store in contentData
   tabs.forEach(function(tab){
      temp = $('<div/>', {'id': tab});
      contentData.push(temp)
   })
-
    //Setup endpoint link
-   var http = document.location.protocol || "http:";
+   var protocol = document.location.protocol || "http:";
    var host = document.location.hostname;
-   apiEndpoint = http + "//" + host + ':8090'+'/recommenderdockerservice/';
+   apiEndpoint = protocol + "//" + host + ':8090'+'/recommenderdockerservice/';
    log(apiEndpoint)
 
    //Function to update the tabs, takes the types of recommender for each tab as input and sets the content of the tab
   var updateData = function(types){
     types.forEach(function(type){
        var tabname = '#'+type;
-
        $.ajax({
        type: "GET",
        dataType: 'json',
@@ -38,10 +49,16 @@
           var dataString = "";
             for (var typeKey in data)
               {
-                data[typeKey].forEach(function (properties){
-                  for(propertyKey in properties)
+                data[typeKey].forEach(function (datavalue){
+                  if(datavalue['type'])
                   {
-                    dataString = dataString+'<p><b> '+propertyKey+': </b>'+properties[propertyKey]+'</p>'
+                    dataString = dataString + '<img src="'+window[datavalue['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+                  }
+                  else
+                    dataString = dataString + '<img src="'+window[type.replace("get","").replace("Recommendation","")+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+                  for(key in datavalue)
+                  {
+                    dataString = dataString+'<p><b> '+key+': </b>'+datavalue[key]+'</p>'
                   }
                   dataString = dataString + '<hr style="border: 1px dashed black;" />'
                 })
@@ -66,7 +83,7 @@
            tabs.forEach(function(tab){
              RED.sidebar.addTab({
                     id: tab,
-                    label: tab.replace("get",""),
+                    label: tab.replace("get","").replace("Recommendation",""),
                     name: tab,
                     content: contentData[tabs.indexOf(tab)],
                     closeable: true,
@@ -85,7 +102,6 @@
             clearInterval(intervalFunction);
          }
           });
-
          //update the data in this interval
          intervalFunction = setInterval(function(){updateData(tabs)},5000);
 
