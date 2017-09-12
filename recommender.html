@@ -1,13 +1,17 @@
 <script type="text/javascript">
+
    //Declaration of variables
    var intervalFunction;
    var apiEndpoint;
+   //tabs for the recommender
    var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation'];
-   var keys = ['title','description','href']
+   //keys to be displayed
+   var keys = ['title','description','link','href']
    var contentData = new Array();
+   var clipboardData = "";
 
    //Icon settings for the recommender tabs
-   var iconRatio = 15;
+   var iconRatio = 30;
    var iconHeight = window.innerHeight/iconRatio;
    var iconWidth = window.innerWidth/iconRatio;
 
@@ -22,43 +26,71 @@
    console.log.apply(console.log, arguments);
    }
 
-   log(window.getHeight+' then '+window.getWidth+ 'then '+iconHeight+'then '+iconWidth)
-
-   //Create div elements for the tabs and store in contentData
+  //Create div elements for the tabs and store in contentData
   tabs.forEach(function(tab){
      temp = $('<div/>', {'id': tab});
      contentData.push(temp)
   })
-   //Setup endpoint link
-   var protocol = document.location.protocol || "http:";
-   var host = document.location.hostname;
-   apiEndpoint = protocol + "//" + host + ':8090'+'/recommenderdockerservice/';
-   log(apiEndpoint)
+
+
+  //Trial function to copy to clipboard
+  function copyToClipboard() {
+    var textArea = document.createElement("textarea");
+    textArea.value = clipboardData;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    log('Copying text command was ' + msg);
+  } catch (err) {
+    console.log('Oops, unable to copy');
+  }
+  document.body.removeChild(textArea);
+}
+
+  //Setup endpoint link
+  var protocol = document.location.protocol || "http:";
+  var host = document.location.hostname;
+  apiEndpoint = protocol + "//" + host + ':8090'+'/recommenderdockerservice/';
+  log(apiEndpoint)
 
    //Function to update the tabs, takes the types of recommender for each tab as input and sets the content of the tab
-  var updateData = function(types){
-    types.forEach(function(type){
-       var tabname = '#'+type;
+   //The data from a recommender is handled as follows:
+   //The data returned is an array of entities ,for example, an array of cloud providers.
+   //Each entity has certain properties, which are key value pairs, like title, description.
+  var updateData = function(recommenderTypes){
+    recommenderTypes.forEach(function(recommenderType){
+       var tabname = '#'+recommenderType;
        $.ajax({
        type: "GET",
        dataType: 'json',
-       url: apiEndpoint+type,
+       url: apiEndpoint+recommenderType,
        crossDomain : true
        })
-       .done(function(data) {
+       .done(function(recommenderData) {
           var dataString = "";
-            for (var typeKey in data)
+            for (var entity in recommenderData)
               {
-                data[typeKey].forEach(function (datavalue){
-                  if(datavalue['type'])
+                recommenderData[entity].forEach(function (properties){
+                  if(properties['type'])
                   {
-                    dataString = dataString + '<img src="'+window[datavalue['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+                    dataString = dataString + '<img src="'+window[properties['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
                   }
                   else
-                    dataString = dataString + '<img src="'+window[type.replace("get","").replace("Recommendation","")+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
-                  for(key in datavalue)
+                    dataString = dataString + '<img src="'+window[recommenderType.replace("get","").replace("Recommendation","")+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+                  for(key in properties)
                   {
-                    dataString = dataString+'<p><b> '+key+': </b>'+datavalue[key]+'</p>'
+                    if(keys.includes(key))
+                      {
+                        if(key=='link'||key=='href')
+                          dataString = dataString + '<p><b> '+key+': </b>'+' <a href="'+properties[key]+'" target="_blank">'+properties[key]+'</a>';
+                        else
+                          dataString = dataString+'<p><b> '+key+': </b>'+properties[key]+'</p>';
+                      }
+                    else {
+                      log('Does not exist')
+                    }
                   }
                   dataString = dataString + '<hr style="border: 1px dashed black;" />'
                 })
@@ -67,7 +99,7 @@
        })
        .fail( function(xhr, textStatus, errorThrown) {
           log("Called with "+tabname)
-          $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+type+'</div>');
+          $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+recommenderType+'</div>');
       })
     });
     }
