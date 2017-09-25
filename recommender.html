@@ -72,6 +72,7 @@
        crossDomain : true
        })
        .done(function(recommenderData) {
+         $('#red-ui-tab-'+recommenderType).show();
           var dataString = "";
             for (var entity in recommenderData)
               {
@@ -103,6 +104,7 @@
        .fail( function(xhr, textStatus, errorThrown) {
           log("Called with "+tabname)
           $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+recommenderType+'</div>');
+          $('#red-ui-tab-'+recommenderType).hide();
       })
     });
     }
@@ -128,6 +130,7 @@
                         }
                 });
                 $('#'+tab).html('<div class="recommender-tab-content">'+"Please wait until recommender output is updated"+'</div>');
+                $('#red-ui-tab-'+tab).hide();
           })
 
 
