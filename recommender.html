@@ -6,7 +6,7 @@
    //tabs for the recommender
    var tabs = ['getCloudRecommendation', 'getWorkflowRecommendation'];
    //keys to be displayed
-   var keys = ['title','description','link','href', 'installCommand']
+   var keys = ['title','description','link','href', 'installCommand', 'javascriptCode']
    var contentData = new Array();
    var clipboardData = "";
 
@@ -16,7 +16,7 @@
    var iconWidth = window.innerWidth/iconRatio;
 
    //Icon URLs
-   var CloudUrl = 'https://s26.postimg.org/w8qdsru11/cloud.png';
+   var cloudUrl = 'https://s26.postimg.org/w8qdsru11/cloud.png';
    var nodeUrl = 'https://s26.postimg.org/lkmmtxk1x/node.png';
    var flowUrl = 'https://s26.postimg.org/r7izremkl/workflow.png';
 
@@ -77,14 +77,12 @@
             for (var entity in recommenderData)
               {
                 recommenderData[entity].forEach(function (properties){
-                  if(properties['type'])
-                  {
-                    dataString = dataString + '<img src="'+window[properties['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
-                  }
-                  else
-                    dataString = dataString + '<img src="'+window[recommenderType.replace("get","").replace("Recommendation","")+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+
+                dataString = dataString + '<img src="'+window[properties['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
+
                   for(key in properties)
                   {
+                    //Add hyperlink to the key value pairs that contain links
                     if(keys.includes(key)&&properties[key]!=null)
                       {
                         if(key=='link'||key=='href')
