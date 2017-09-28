@@ -11,7 +11,7 @@
    var clipboardData = "";
 
    //Icon settings for the recommender tabs
-   var iconRatio = 30;
+   var iconRatio = 20;
    var iconHeight = window.innerHeight/iconRatio;
    var iconWidth = window.innerWidth/iconRatio;
 
@@ -34,27 +34,35 @@
 
 
   //Trial function to copy to clipboard
-  function copyToClipboard(id) {
-    var textArea = document.createElement("textarea");
-    textArea.value = "error"
-    document.getElementById(id).value;
-    log("ID issue")
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-    var successful = document.execCommand('copy');
-    var msg = successful ? 'successful' : 'unsuccessful';
-    log('Copying text command was ' + msg);
-  } catch (err) {
-    console.log('Oops, unable to copy');
-  }
-  document.body.removeChild(textArea);
+  function copyToClipboard() {
+    //Get the target element from window.event
+    var e = window.event
+    var targetData = localStorage.getItem(e.srcElement.id);
+
+    //Create a new element to store the Clipboard Data
+    var newDiv = document.createElement("input");
+    newDiv.setAttribute("id", "copyToClipboardElement");
+    newDiv.setAttribute("type","text");
+    newDiv.setAttribute("value",targetData);
+    var newContent = document.createTextNode(targetData);
+    newDiv.appendChild(newContent);
+
+    //Append the child to the document body
+    document.body.appendChild(newDiv);
+    // log(appendedChild);
+
+    //Copy text from the element to clipboard
+    var copyText = document.querySelector("#copyToClipboardElement");
+    document.getElementById("copyToClipboardElement").select();
+    log(document.execCommand("Copy"));
+
 }
 
   function installNode(){
     //Get the target element from window.event
     var e = window.event
     var targetNode = e.srcElement.value;
+    log(targetNode)
     var requestBody = {
             module: targetNode
         };
@@ -69,6 +77,8 @@
             log("Installation Failed")
         });
     }
+
+
   //Setup endpoint link
   var protocol = document.location.protocol || "http:";
   var host = document.location.hostname;
@@ -80,6 +90,7 @@
    //The data returned is an array of entities ,for example, an array of cloud providers.
    //Each entity has certain properties, which are key value pairs, like title, description.
   var updateData = function(recommenderTypes){
+    //Counts the number of buttons and increments to offer a unique id for each button
     var buttonId = 0;
     recommenderTypes.forEach(function(recommenderType){
        var tabname = '#'+recommenderType;
@@ -92,35 +103,54 @@
        .done(function(recommenderData) {
          $('#red-ui-tab-'+recommenderType).show();
          $(tabname).empty();
-          var dataString = "";
             for (var entity in recommenderData)
               {
+                var dataString = "";
                 recommenderData[entity].forEach(function (properties){
 
+                //Add icon depending on the type of recommendation
                 dataString = dataString + '<img src="'+window[properties['type']+"Url"]+'"align="left" height="'+iconHeight+'" width ="'+iconWidth+'">';
 
                   for(key in properties)
                   {
-                    //Add hyperlink to the key value pairs that contain links
+
                     if(keys.includes(key)&&properties[key]!=null)
                       {
+                        //Add hyperlink to the key value pairs that contain links
                         if(key=='link'||key=='href')
                           dataString = dataString + '<p><b> '+key+': </b>'+' <a href="'+properties[key]+'" target="_blank">'+properties[key]+'</a>';
-                        else
-                          dataString = dataString+'<p><b> '+key+': </b>'+properties[key]+'</p>';
-                          else if(key=='installCommand')
-                            {
-                              dataString = dataString + '<button value = "'+properties[key].replace("npm install ","").toString()+'" onclick = installNode()>Install Node</button>';
-                            }
+
+                        //Add copy button
+                        else if(key=='javascriptCode')
+                          {
+                            dataString = dataString + '<button id = "recommenderButton'+buttonId+'" onclick = "copyToClipboard()" >Copy to Clipboard</button>';
+                            localStorage.setItem("recommenderButton"+buttonId,properties[key])
+                            buttonId++;
+                          }
+
+                        //Add install button
+                        else if(key=='installCommand')
+                          {
+                            dataString = dataString + '<button value = "'+properties[key].replace("npm install ","").toString()+'" onclick = installNode()>Install Node</button>';
+                          }
+
+                        //Add property for display
+                        else {
+                            dataString = dataString+'<p><b> '+key+': </b>'+properties[key]+'</p>';
+                        }
                       }
                     else {
                       log('Does not exist')
                     }
+
+
                   }
+                  //Separate each output
                   dataString = dataString + '<hr style="border: 1px dashed black;" />'
                 })
+                //Add the recommended entity to the list of displayed entities on the tab
+                $(tabname).append(dataString)
               }
-            $(tabname).html('<div class="recommender-tab-content">'+dataString+'</div>');
        })
        .fail( function(xhr, textStatus, errorThrown) {
           log("Called with "+tabname)
@@ -151,11 +181,11 @@
                         }
                 });
                 $('#'+tab).html('<div class="recommender-tab-content">'+"Please wait until recommender output is updated"+'</div>');
+                //Hide the tabs, show them when data is acquired from the recommender
                 $('#red-ui-tab-'+tab).hide();
           })
-
-
            },
+
          onpaletteremove:function(){
             RED.sidebar.removeTab('recommender');
             clearInterval(intervalFunction);
