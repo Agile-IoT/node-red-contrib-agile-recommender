@@ -91,6 +91,7 @@
        })
        .done(function(recommenderData) {
          $('#red-ui-tab-'+recommenderType).show();
+         $(tabname).empty();
           var dataString = "";
             for (var entity in recommenderData)
               {
