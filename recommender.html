@@ -51,6 +51,24 @@
   document.body.removeChild(textArea);
 }
 
+  function installNode(){
+    //Get the target element from window.event
+    var e = window.event
+    var targetNode = e.srcElement.value;
+    var requestBody = {
+            module: targetNode
+        };
+        $.ajax({
+            url:"nodes",
+            type: "POST",
+            data: JSON.stringify(requestBody),
+            contentType: "application/json; charset=utf-8"
+        }).done(function(data,textStatus,xhr) {
+            log("Node installed")
+        }).fail(function(xhr,textStatus,err) {
+            log("Installation Failed")
+        });
+    }
   //Setup endpoint link
   var protocol = document.location.protocol || "http:";
   var host = document.location.hostname;
@@ -89,6 +107,10 @@
                           dataString = dataString + '<p><b> '+key+': </b>'+' <a href="'+properties[key]+'" target="_blank">'+properties[key]+'</a>';
                         else
                           dataString = dataString+'<p><b> '+key+': </b>'+properties[key]+'</p>';
+                          else if(key=='installCommand')
+                            {
+                              dataString = dataString + '<button value = "'+properties[key].replace("npm install ","").toString()+'" onclick = installNode()>Install Node</button>';
+                            }
                       }
                     else {
                       log('Does not exist')
