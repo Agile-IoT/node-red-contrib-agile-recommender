@@ -9,6 +9,7 @@
    var keys = ['title','description','link','href', 'installCommand', 'javascriptCode']
    var contentData = new Array();
    var clipboardData = "";
+   var recommenderOutput = false;
 
    //Icon settings for the recommender tabs
    var iconRatio = 20;
@@ -90,6 +91,7 @@
    //The data returned is an array of entities ,for example, an array of cloud providers.
    //Each entity has certain properties, which are key value pairs, like title, description.
   var updateData = function(recommenderTypes){
+    log("Update Data called")
     //Counts the number of buttons and increments to offer a unique id for each button
     var buttonId = 0;
     recommenderTypes.forEach(function(recommenderType){
@@ -101,6 +103,13 @@
        crossDomain : true
        })
        .done(function(recommenderData) {
+         if(!recommenderOutput)
+          {
+            clearInterval(intervalFunction);
+            log("No recommender output before, clearing interval function.");
+            intervalFunction = setInterval(function(){updateData(tabs)},300000);
+            recommenderOutput = true;
+          }
          $('#red-ui-tab-'+recommenderType).show();
          $(tabname).empty();
             for (var entity in recommenderData)
@@ -139,9 +148,7 @@
                             dataString = dataString+'<p><b> '+key+': </b>'+properties[key]+'</p>';
                         }
                       }
-                    else {
-                      log('Does not exist')
-                    }
+                    
 
 
                   }
@@ -153,9 +160,10 @@
               }
        })
        .fail( function(xhr, textStatus, errorThrown) {
-          log("Called with "+tabname)
-          $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+recommenderType+'</div>');
+          // log("Called with "+tabname)
+          // $(tabname).html('<div class="recommender-tab-content">'+"Failed to retrieve information from the recommender type: "+recommenderType+'</div>');
           $('#red-ui-tab-'+recommenderType).hide();
+
       })
     });
     }
@@ -192,8 +200,8 @@
          }
           });
          //update the data in this interval
-         updateData(tabs);
-         intervalFunction = setInterval(function(){updateData(tabs)},300000);
+         intervalFunction = setInterval(function(){updateData(tabs)},5000);
+
 
 
 </script>
